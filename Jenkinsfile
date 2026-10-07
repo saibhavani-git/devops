@@ -26,20 +26,24 @@ pipeline {
         }
 
         stage('Docker Login') {
-            steps {
-                echo "Logging in to Docker Hub..."
-
-                // Use Jenkins credentials here
-            }
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )
+        ]) {
+            bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
         }
+    }
+}
 
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                echo "Pushing Docker Image..."
-
-                bat "docker push %IMAGE_NAME%:%IMAGE_TAG%"
-            }
-        }
+       stage('Push Docker Image to Docker Hub') {
+    steps {
+        bat 'docker push %IMAGE_NAME%:%IMAGE_TAG%'
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
